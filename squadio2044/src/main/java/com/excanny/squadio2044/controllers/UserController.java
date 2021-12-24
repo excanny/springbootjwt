@@ -1,26 +1,19 @@
 package com.excanny.squadio2044.controllers;
 
-import com.excanny.squadio2044.models.JwtRequest;
-import com.excanny.squadio2044.models.JwtResponse;
-import com.excanny.squadio2044.models.User;
-import com.excanny.squadio2044.models.UserResponseDTO;
+import com.excanny.squadio2044.models.*;
 import com.excanny.squadio2044.services.JwtService;
 import com.excanny.squadio2044.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.HttpHeaders;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class UserController {
@@ -72,6 +65,47 @@ public class UserController {
         return restTemplate.exchange("https://purple-fire-5350.getsandbox.com/users", HttpMethod.GET, entity, List.class).getBody();
 
     }
+
+    @GetMapping({"/getUser/{username}"})
+    @PreAuthorize("hasRole('Admin')")
+    public UserResponseDTO getUser(@PathVariable("username") String username){
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        HttpEntity<UserResponseDTO> entity = new HttpEntity<UserResponseDTO>(headers);
+
+        ResponseEntity<UserResponseDTO> responseEntity = restTemplate
+                .exchange("https://purple-fire-5350.getsandbox.com/users/"+username, HttpMethod.GET, entity, UserResponseDTO.class);
+
+        return responseEntity.getBody();
+    }
+
+    @GetMapping({"/getUserAccounts/{user_id}"})
+    public List<UserAccountsResponseDTO> getUserAccounts(@PathVariable("user_id") String user_id){
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        HttpEntity<UserAccountsResponseDTO> entity = new HttpEntity<UserAccountsResponseDTO>(headers);
+
+        ResponseEntity<List> responseEntity = restTemplate
+                .exchange("https://purple-fire-5350.getsandbox.com/accounts/"+user_id, HttpMethod.GET, entity, List.class);
+
+        return responseEntity.getBody();
+    }
+
+    @PostMapping("/getUserAccountStatement")
+    public List<AccountStatementResponseDTO> createEmployee(@RequestBody AccountStatementVM accountId)
+    {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        HttpEntity<AccountStatementResponseDTO> entity = new HttpEntity<AccountStatementResponseDTO>(accountId, headers);
+
+        ResponseEntity<List> responseEntity =  restTemplate
+                .exchange("https://purple-fire-5350.getsandbox.com/accounts/statements", HttpMethod.POST, entity, List.class);
+        return responseEntity.getBody();
+
+    }
+
 
     @GetMapping({"/forUser"})
     @PreAuthorize("hasRole('User')")

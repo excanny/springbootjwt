@@ -4,12 +4,15 @@ import com.excanny.squadio2044.models.*;
 import com.excanny.squadio2044.services.JwtService;
 import com.excanny.squadio2044.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +27,8 @@ public class UserController {
     @Autowired
     private JwtService jwtService;
 
+    Authentication authentication;
+
     RestTemplate restTemplate = new RestTemplate();
 
     @PostConstruct
@@ -31,28 +36,28 @@ public class UserController {
         userService.initRoleAndUser();
     }
 
-    @PostMapping({"/register"})
-    public User registerNewUser(@RequestBody User user) {
-        return userService.registerNewUser(user);
-    }
+//    @PostMapping({"/register"})
+//    public User registerNewUser(@RequestBody User user) {
+//        return userService.registerNewUser(user);
+//    }
 
     @PostMapping({"/login"})
     public JwtResponse createJwtToken(@RequestBody JwtRequest jwtRequest) throws Exception {
         return jwtService.createJwtToken(jwtRequest);
     }
 
-    @GetMapping({"/forAdmin"})
-    @PreAuthorize("hasRole('Admin')")
-    public String forAdmin(){
-
-        //return "This URL is only accessible to the admin";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        HttpEntity <String> entity = new HttpEntity<String>(headers);
-
-        return restTemplate.exchange("https://purple-fire-5350.getsandbox.com/users", HttpMethod.GET, entity, String.class).getBody();
-
-    }
+//    @GetMapping({"/forAdmin"})
+//    @PreAuthorize("hasRole('Admin')")
+//    public String forAdmin(){
+//
+//        //return "This URL is only accessible to the admin";
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+//        HttpEntity <String> entity = new HttpEntity<String>(headers);
+//
+//        return restTemplate.exchange("https://purple-fire-5350.getsandbox.com/users", HttpMethod.GET, entity, String.class).getBody();
+//
+//    }
 
     @GetMapping({"/getAllUsers"})
     @PreAuthorize("hasRole('Admin')")
@@ -82,7 +87,10 @@ public class UserController {
 
     @GetMapping({"/getUserAccounts/{user_id}"})
     public List<UserAccountsResponseDTO> getUserAccounts(@PathVariable("user_id") String user_id){
-
+        if(user_id != user_id)
+        {
+           // return (List<UserAccountsResponseDTO>)"Unauthorized";
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         HttpEntity<UserAccountsResponseDTO> entity = new HttpEntity<UserAccountsResponseDTO>(headers);
@@ -106,10 +114,13 @@ public class UserController {
 
     }
 
+//    @GetMapping("/userid")
+//    @ResponseBody
+//    public String currentUserId() {
+//
+//        User user =(User) authentication.getPrincipal();
+//
+//        return user.getUserId();
+//    }
 
-    @GetMapping({"/forUser"})
-    @PreAuthorize("hasRole('User')")
-    public String forUser(){
-        return "This URL is only accessible to the user";
-    }
 }
